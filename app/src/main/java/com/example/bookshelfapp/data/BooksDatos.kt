@@ -1,5 +1,6 @@
 package com.example.bookshelfapp.data
 
+import com.example.bookshelfapp.model.Book
 import com.google.gson.annotations.SerializedName
 
 
