@@ -8,8 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookshelfapp.model.BooksViewModel
 import com.example.bookshelfapp.ui.screens.HomeScreen
@@ -30,9 +32,12 @@ fun BookshelfApp() {
         }
     ) { innerPadding ->
         Surface(modifier = Modifier.fillMaxSize()) {
-            val booksViewModel: BooksViewModel = viewModel(factory = BooksViewModel.Factory)
+            // Instanciación directa
+            val booksViewModel: BooksViewModel = viewModel()
+            // Recolección del StateFlow
+            val uiState by booksViewModel.uiState.collectAsStateWithLifecycle()
             HomeScreen(
-                uiState = booksViewModel.uiState,
+                uiState = uiState,
                 onRetry = { booksViewModel.getBooks() },
                 contentPadding = innerPadding
             )

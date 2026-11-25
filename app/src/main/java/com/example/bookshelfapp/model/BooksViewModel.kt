@@ -12,6 +12,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.bookshelfapp.BookshelfApplication
 import com.example.bookshelfapp.data.BooksRepository
 import com.example.bookshelfapp.ui.BooksUiState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
@@ -20,9 +23,9 @@ class BooksViewModel(
     private val booksRepository: BooksRepository
 ) : ViewModel() {
 
-    /** Estado actual; la UI lo observa y se redibuja cuando cambia */
-    var uiState: BooksUiState by mutableStateOf(BooksUiState.Loading)
-        private set
+    // Estado reactivo con StateFlow (como en NavigationApp)
+    private val _uiState = MutableStateFlow<BooksUiState>(BooksUiState.Loading)
+    val uiState: StateFlow<BooksUiState> = _uiState.asStateFlow()
 
     init {
         getBooks()
@@ -30,8 +33,8 @@ class BooksViewModel(
 
     fun getBooks(query: String = DEFAULT_QUERY) {
         viewModelScope.launch {
-            uiState = BooksUiState.Loading
-            uiState = try {
+            _uiState.value = BooksUiState.Loading
+            _uiState.value = try {
                 BooksUiState.Success(booksRepository.getBooks(query))
             } catch (e: IOException) {
                 BooksUiState.Error      // Sin conexión, timeout...
@@ -42,14 +45,6 @@ class BooksViewModel(
     }
 
     companion object {
-        private const val DEFAULT_QUERY = "romance"
-
-        /** Le enseña a Android cómo construir el ViewModel con su repositorio */
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val application = this[APPLICATION_KEY] as BookshelfApplication
-                BooksViewModel(application.container.booksRepository)
-            }
-        }
+        private const val DEFAULT_QUERY = "fiction"
     }
 }
